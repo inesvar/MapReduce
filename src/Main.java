@@ -1,5 +1,7 @@
+import java.io.IOException;
+
 public class Main {
-    public static void main(String[] args) {
-        System.out.println(args[0]);
+    public static void main(String[] args) throws IOException {
+        System.out.println(WordCount.countWords(args[0]));
     }
 }
