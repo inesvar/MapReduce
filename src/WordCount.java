@@ -15,6 +15,9 @@ public class WordCount {
         while ((line = reader.readLine()) != null) {
             String[] words = line.split("\\s+"); // splits by whitespaces
             for (String word : words) {
+                if (word.isEmpty()) {
+                    continue;
+                }
                 if (wordCount.containsKey(word)) {
                     int count = wordCount.get(word);
                     wordCount.put(word, count + 1);
