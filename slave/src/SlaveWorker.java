@@ -72,9 +72,10 @@ public class SlaveWorker extends Thread {
             //REDUCE
             for (Map.Entry<String, Integer> word : entryList) {
                 Integer count = Integer.valueOf(word.getValue());
-                int c = hashmap.getOrDefault(word, 0);
+                int c = hashmap.getOrDefault(word.getKey(), 0);
                 hashmap.put(word.getKey(), count + c);
             }
+
 
             // SEND THE RESULTS TO THE MASTER
             Sender sender = new Sender(MASTER, new ReduceResult(id, hashmap));

@@ -38,7 +38,6 @@ public class Manager extends Thread {
 
         // get the id of the slave
         ID = Integer.valueOf(args[1]);
-        System.out.println("36");
         int PORT0;
         if (args.length >= 3) {
             PORT0 = Integer.valueOf(args[2]);
@@ -49,7 +48,6 @@ public class Manager extends Thread {
         for (int i = 0; i < NB_SLAVES + 1; i++) {
             PORT[i] = PORT0 + i;
         }
-        System.out.println("47");
         // Start the listener
         Listener ml = new Listener();
         ml.start();
@@ -65,7 +63,6 @@ public class Manager extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("63");
         // Start the slaves
         worker = new SlaveWorker(ID, IP);
         worker.start();
@@ -83,7 +80,6 @@ public class Manager extends Thread {
             Object obj = oin.readObject(); 
             if (obj instanceof ShuffleReady) {
                 worker.startShuffle();
-                System.out.println("the slaves started the shuffle");
             } else if (obj instanceof ReduceReady) {
                 synchronized(this) { worker.startReduce(wordList); }
             } else if (obj instanceof ShuffleData) {

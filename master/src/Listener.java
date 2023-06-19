@@ -15,7 +15,6 @@ public class Listener extends Thread {
             System.out.println("master server listening on port " + PORT[ID].toString());
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("master received a message :");
                 Manager process = new Manager(socket);
                 process.start();
             }
