@@ -1,0 +1,1 @@
+ssh tp-3a107-09 pkill java; ssh tp-3a107-13 pkill java; ssh tp-3a107-14 pkill java; ssh tp-3a107-12 pkill java

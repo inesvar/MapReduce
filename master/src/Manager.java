@@ -41,11 +41,22 @@ public class Manager extends Thread {
         if (args.length >= 2) {
             PORT0 = Integer.valueOf(args[1]);
         } else {
-            PORT0 = 10000;
+            PORT0 = 50000;
         }
         PORT = new Integer[NB_SLAVES + 1];
         for (int i = 0; i < NB_SLAVES + 1; i++) {
             PORT[i] = PORT0 + i;
+        }
+        // read the IPs from the file IPfile.txt
+        IP = new String[NB_SLAVES + 1];
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("IPs.txt"));
+            for (int i = 0; i < NB_SLAVES + 1; i++) {
+            IP[i] = br.readLine();
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         Listener ml = new Listener();
@@ -72,17 +83,6 @@ public class Manager extends Thread {
 
     public void startShuffle() {
         System.out.println("master reached start shuffle");
-        // read the IPs from the file IPfile.txt
-        IP = new String[NB_SLAVES + 1];
-        try {
-            BufferedReader br = new BufferedReader(new FileReader("IPs.txt"));
-            for (int i = 0; i < NB_SLAVES + 1; i++) {
-            IP[i] = br.readLine();
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         for (int slave : SLAVES) {
             Sender ms = new Sender(slave, new ShuffleReady(NB_SLAVES));
             ms.start();

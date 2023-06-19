@@ -42,7 +42,7 @@ public class Manager extends Thread {
         if (args.length >= 3) {
             PORT0 = Integer.valueOf(args[2]);
         } else {
-            PORT0 = 10000;
+            PORT0 = 50000;
         }
         PORT = new Integer[NB_SLAVES + 1];
         for (int i = 0; i < NB_SLAVES + 1; i++) {
