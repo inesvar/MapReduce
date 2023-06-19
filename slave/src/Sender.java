@@ -1,6 +1,8 @@
 package src;
 
-import java.io.DataOutputStream;
+import static src.Manager.PORT;
+import static src.Manager.IP;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -8,23 +10,20 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import src.messages.Message;
-import src.messages.ShuffleReady;
 
 public class Sender extends Thread {
-    private String IP;
     private Message m;
-    private Integer port;
+    private int id;
 
-    public Sender(String IP, Integer port, Message m) {
-        this.IP = IP;
-        this.port = port;
+    public Sender(Integer id, Message m) {
         this.m = m;
+        this.id = id;
     }
 
     public void run() {
         try {
-            InetAddress addr = InetAddress.getByName(this.IP);
-            Socket slave = new Socket(addr, this.port);
+            InetAddress addr = InetAddress.getByName(IP[id]);
+            Socket slave = new Socket(addr, PORT[id]);
             ObjectOutputStream out = new ObjectOutputStream(slave.getOutputStream());
             out.writeObject(this.m);
             out.close();

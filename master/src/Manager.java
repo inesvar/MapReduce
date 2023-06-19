@@ -13,11 +13,12 @@ import java.util.HashMap;
 
 public class Manager extends Thread {
 
+    public static final Integer ID = 0;
     // almost final variables
     public static int NB_SLAVES;
-    public static Integer MASTER_PORT = 10000;
-    public static Integer SLAVE_PORT = MASTER_PORT + 1;
-    private static String[] IPs;
+    public static Integer[] SLAVES;
+    public static Integer[] PORT;
+    public static String[] IP;
 
     // variables that will be accessed by multiple threads
     private volatile static int readyForShuffle = 0;
@@ -31,10 +32,20 @@ public class Manager extends Thread {
     public static void main(String[] args) {
         // get the number of slaves
         NB_SLAVES = Integer.valueOf(args[0]);
+        SLAVES = new Integer[NB_SLAVES];
+        for (int i = 0; i < NB_SLAVES; i++) {
+            SLAVES[i] = i+1;
+        }
 
+        int PORT0;
         if (args.length >= 2) {
-            MASTER_PORT = Integer.valueOf(args[1]);
-            SLAVE_PORT = MASTER_PORT + 1;
+            PORT0 = Integer.valueOf(args[1]);
+        } else {
+            PORT0 = 10000;
+        }
+        PORT = new Integer[NB_SLAVES + 1];
+        for (int i = 0; i < NB_SLAVES + 1; i++) {
+            PORT[i] = PORT0 + i;
         }
 
         Listener ml = new Listener();
@@ -60,26 +71,28 @@ public class Manager extends Thread {
     }
 
     public void startShuffle() {
+        System.out.println("master reached start shuffle");
         // read the IPs from the file IPfile.txt
-        IPs = new String[NB_SLAVES + 1];
+        IP = new String[NB_SLAVES + 1];
         try {
             BufferedReader br = new BufferedReader(new FileReader("IPs.txt"));
             for (int i = 0; i < NB_SLAVES + 1; i++) {
-            IPs[i] = br.readLine();
+            IP[i] = br.readLine();
             }
             br.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < NB_SLAVES; i++) {
-            Sender ms = new Sender(IPs[i], new ShuffleReady(NB_SLAVES));
+        for (int slave : SLAVES) {
+            Sender ms = new Sender(slave, new ShuffleReady(NB_SLAVES));
             ms.start();
         };
+        System.out.println("master started the shuffle");
     }
 
     public void startReduce() {
-        for (int i = 0; i < NB_SLAVES; i++) {
-            Sender ms = new Sender(Manager.IPs[i], new ReduceReady(NB_SLAVES));
+        for (int slave : SLAVES) {
+            Sender ms = new Sender(slave, new ReduceReady(NB_SLAVES));
             ms.start();
         };
     }
@@ -95,7 +108,7 @@ public class Manager extends Thread {
                     rs = ++readyForShuffle;
                     ready = readyForShuffle == NB_SLAVES;
                 }
-                System.out.println(rs.toString() + " slave(s) ready for shuffle");
+                System.out.println(rs.toString() + " slave(s) ready for shuffle" + ((ShuffleReady)obj).getId());
                 if (ready) {
                     startShuffle();
                 }

@@ -1,7 +1,7 @@
 package src;
 
 import static src.Manager.ID;
-import static src.Manager.SLAVE_PORT;
+import static src.Manager.PORT;
 
 import java.util.ArrayList;
 import java.io.BufferedReader;
@@ -15,8 +15,8 @@ public class Listener extends Thread {
 
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(SLAVE_PORT);
-            System.out.println("server " + ID.toString() + " listening on port " + SLAVE_PORT.toString());
+            ServerSocket serverSocket = new ServerSocket(PORT[ID]);
+            System.out.println("server " + ID.toString() + " listening on port " + PORT[ID].toString());
             while (true) {
                 Socket master = serverSocket.accept();
                 Manager manager = new Manager(master);

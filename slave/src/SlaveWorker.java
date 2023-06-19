@@ -2,26 +2,21 @@ package src;
 import static src.Manager.*;
 
 import src.messages.ShuffleData;
-import src.messages.ReduceReady;
 import src.messages.ShuffleReady;
 import src.messages.ReduceResult;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
 
 // This class does the MAP, the SHUFFLE, notifies the Master
 public class SlaveWorker extends Thread {
     private Integer id;
     private String fileInput;
-    private HashMap<String, Integer> hashmap;
+    private HashMap<String, Integer> hashmap = new HashMap<>();
     private ArrayList<Map.Entry<String, Integer>> entryList;
 
     public SlaveWorker(Integer id, String[] IPs) {
@@ -41,40 +36,40 @@ public class SlaveWorker extends Thread {
 
     public synchronized void run() {
         try {
-
             // MAPPING
-            List<Map.Entry<String, Integer>> entries = SortedWordCount.countWords(fileInput);
+            ArrayList<Map.Entry<String, Integer>> entries = SortedWordCount.countWords(fileInput);
             System.out.println();
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 2; i++) {
                 System.out.println(entries.get(i).toString());
             }
 
             // NOTIFY THE MASTER
-            System.out.println("trying to connect to " + IPs[MASTER] + " port " + MASTER_PORT.toString());
-            Sender senderSR = new Sender(IPs[MASTER], MASTER_PORT, new ShuffleReady(id));
+            System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
+            Sender senderSR = new Sender(MASTER, new ShuffleReady(id));
             senderSR.start();
 
             wait();
             System.out.println("worker "+id.toString()+" starting shuffle");
 
             // SHUFFLE
+            ShuffleData[] data = new ShuffleData[NB_SLAVES];
+            for (int i = 0; i < NB_SLAVES; i++) {
+                data[i] = new ShuffleData(id);
+            }
             for (Map.Entry<String, Integer> entry: entries) {
                 int slave = entry.getKey().hashCode()%NB_SLAVES;
-                Sender senderS = new Sender(IPs[slave], SLAVE_PORT, new ShuffleData(id, entry));
-                senderS.start();
+                data[slave].addData(entry);
             }
-
-            // NOTIFY THE MASTER
-            System.out.println("trying to connect to " + IPs[MASTER] + " port " + MASTER_PORT.toString());
-            Sender senderRR = new Sender(IPs[MASTER], MASTER_PORT, new ReduceReady(id));
-            senderRR.start();
+            for (int i = 0; i < NB_SLAVES; i++) {
+                Sender sender = new Sender(SLAVES[i], data[i]);
+                sender.start();
+            }
 
             wait();
             System.out.println("worker "+id.toString()+" starting reduce");
             System.out.println("worker "+id.toString()+" mappedData : "+entryList.toString());
 
             //REDUCE
-            hashmap = new HashMap<>();
             for (Map.Entry<String, Integer> word : entryList) {
                 Integer count = Integer.valueOf(word.getValue());
                 int c = hashmap.getOrDefault(word, 0);
@@ -82,7 +77,7 @@ public class SlaveWorker extends Thread {
             }
 
             // SEND THE RESULTS TO THE MASTER
-            Sender sender = new Sender(IPs[MASTER], MASTER_PORT, new ReduceResult(id, hashmap));
+            Sender sender = new Sender(MASTER, new ReduceResult(id, hashmap));
             sender.start();
             System.out.println("worker "+id.toString()+" sent results to master");
             Thread.sleep(1000);

@@ -30,7 +30,7 @@ java -cp target "$masterFile" "$numberOfSlaves" "$@" &
 cd ..
 
 #LAUCHING THE SLAVES
-for i in $(seq 0 $((numberOfSlaves-1))); do
+for i in $(seq 1 $((numberOfSlaves))); do
   cp -r "$slaveFolder" "$slaveFolder$i"
   cd "$slaveFolder$i"
   ant

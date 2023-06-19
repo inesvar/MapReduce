@@ -1,6 +1,7 @@
 package src;
 
-import static src.Manager.MASTER_PORT;
+import static src.Manager.PORT;
+import static src.Manager.ID;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,8 +11,8 @@ public class Listener extends Thread {
 
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(MASTER_PORT);
-            System.out.println("master server listening on port " + MASTER_PORT.toString());
+            ServerSocket serverSocket = new ServerSocket(PORT[ID]);
+            System.out.println("master server listening on port " + PORT[ID].toString());
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("master received a message :");

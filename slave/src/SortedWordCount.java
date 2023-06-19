@@ -3,9 +3,9 @@ import java.io.*;
 import java.util.*;
 
 public class SortedWordCount {
-    private static List<Map.Entry<String, Integer>> entries;
+    private static ArrayList<Map.Entry<String, Integer>> entries;
 
-    public static List<Map.Entry<String, Integer>> countWords(String filename) throws IOException {
+    public static ArrayList<Map.Entry<String, Integer>> countWords(String filename) throws IOException {
         long startTime = System.currentTimeMillis();
 
         HashMap<String, Integer> wordCount = new HashMap<>();
@@ -47,7 +47,7 @@ public class SortedWordCount {
     }
 
     private static <K extends Comparable<K>, V extends Comparable<V>> void sortByValueThenKey(
-        List<Map.Entry<String, Integer>> entries) {
+        ArrayList<Map.Entry<String, Integer>> entries) {
 
         entries.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()) == 0
                                 ? o1.getKey().compareTo(o2.getKey())
