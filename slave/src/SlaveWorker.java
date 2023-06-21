@@ -16,16 +16,16 @@ import java.util.Map.Entry;
 public class SlaveWorker extends Thread {
     private Integer id;
     private String fileInput;
-    private HashMap<String, Integer> hashmap = new HashMap<>();
-    private ArrayList<Map.Entry<String, Integer>> entryList;
+    private HashMap<String, Long> hashmap = new HashMap<>();
+    private ArrayList<Map.Entry<String, Long>> entryList;
 
-    public SlaveWorker(Integer id, String[] IPs) {
+    public SlaveWorker(Integer id, String[] IPs, String fileInput) {
         this.id = id;
         // construct the file name of the text that is going to be mapped
-        this.fileInput = "S"+id.toString()+".txt";
+        this.fileInput = fileInput;
     }
 
-    public synchronized void startReduce(ArrayList<Map.Entry<String, Integer>> entryList) {
+    public synchronized void startReduce(ArrayList<Map.Entry<String, Long>> entryList) {
         this.entryList = entryList;
         this.notify();
     }
@@ -37,7 +37,7 @@ public class SlaveWorker extends Thread {
     public synchronized void run() {
         try {
             // MAPPING
-            ArrayList<Map.Entry<String, Integer>> entries = SortedWordCount.countWords(fileInput);
+            ArrayList<Map.Entry<String, Long>> entries = SortedWordCount.countWords(fileInput);
             System.out.println();
             for (int i = 0; i < 2; i++) {
                 System.out.println(entries.get(i).toString());
@@ -56,9 +56,9 @@ public class SlaveWorker extends Thread {
             for (int i = 0; i < NB_SLAVES; i++) {
                 data[i] = new ShuffleData(id);
             }
-            for (Map.Entry<String, Integer> entry: entries) {
-                int slave = entry.getKey().hashCode()%NB_SLAVES;
-                data[slave].addData(entry);
+            for (Map.Entry<String, Long> entry: entries) {
+                int slave = entry.getKey().hashCode()%NB_SLAVES + NB_SLAVES;
+                data[slave%NB_SLAVES].addData(entry);
             }
             for (int i = 0; i < NB_SLAVES; i++) {
                 Sender sender = new Sender(SLAVES[i], data[i]);
@@ -67,20 +67,19 @@ public class SlaveWorker extends Thread {
 
             wait();
             System.out.println("worker "+id.toString()+" starting reduce");
-            System.out.println("worker "+id.toString()+" mappedData : "+entryList.toString());
 
             //REDUCE
-            for (Map.Entry<String, Integer> word : entryList) {
-                Integer count = Integer.valueOf(word.getValue());
-                int c = hashmap.getOrDefault(word.getKey(), 0);
+            for (Map.Entry<String, Long> word : entryList) {
+                Long count = Long.valueOf(word.getValue());
+                long c = hashmap.getOrDefault(word.getKey(), (long)0);
                 hashmap.put(word.getKey(), count + c);
             }
 
 
             // SEND THE RESULTS TO THE MASTER
-            Sender sender = new Sender(MASTER, new ReduceResult(id, hashmap));
-            sender.start();
-            System.out.println("worker "+id.toString()+" sent results to master");
+            /* Sender sender = new Sender(MASTER, new ReduceResult(id, hashmap));
+            sender.start(); */
+            System.out.println("worker "+id.toString()+" terminated");
             Thread.sleep(1000);
             System.exit(0);
 

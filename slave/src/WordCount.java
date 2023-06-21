@@ -2,7 +2,7 @@ package src;
 import java.io.*;
 import java.util.*;
 
-public class SortedWordCount {
+public class WordCount {
     private static ArrayList<Map.Entry<String, Long>> entries;
 
     public static ArrayList<Map.Entry<String, Long>> countWords(String filename) throws IOException {
@@ -36,22 +36,13 @@ public class SortedWordCount {
 
         startTime   = System.currentTimeMillis();
 
-        SortedWordCount.entries = new ArrayList<>(wordCount.entrySet());
-        SortedWordCount.sortByValueThenKey(entries);
+        WordCount.entries = new ArrayList<>(wordCount.entrySet());
 
         endTime   = System.currentTimeMillis();
         totalTime = endTime - startTime;
         System.out.println("Ordering total time : " + totalTime + "ms");
 
         return entries;
-    }
-
-    private static <K extends Comparable<K>, V extends Comparable<V>> void sortByValueThenKey(
-        ArrayList<Map.Entry<String, Long>> entries) {
-
-        entries.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()) == 0
-                                ? o1.getKey().compareTo(o2.getKey())
-                                : o2.getValue().compareTo(o1.getValue()));
     }
 }
 

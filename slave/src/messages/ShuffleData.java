@@ -10,25 +10,25 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class ShuffleData extends Message implements Serializable {
-    private ArrayList<Map.Entry<String, Integer>> data = new ArrayList<>();
+    private ArrayList<Map.Entry<String, Long>> data = new ArrayList<>();
     private int id;
 
     public ShuffleData(int id) {
         this.id = id;
     }
 
-    public void addData(Map.Entry<String, Integer> wordCount) {
+    public void addData(Map.Entry<String, Long> wordCount) {
         this.data.add(wordCount);
     }
 
-    public ArrayList<Map.Entry<String, Integer>> getEntries() {
+    public ArrayList<Map.Entry<String, Long>> getEntries() {
         return this.data;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(this.data.size());
         out.writeObject(id);
-        for (Map.Entry<String, Integer> entry: this.data) {
+        for (Map.Entry<String, Long> entry: this.data) {
             out.writeObject(entry.getKey());
             out.writeObject(entry.getValue());
         }
@@ -40,8 +40,8 @@ public class ShuffleData extends Message implements Serializable {
         this.id = (int)in.readObject();
         for (int i = 0; i < length; i++) {
             String key = (String)in.readObject();
-            int value = (int)in.readObject();
-            AbstractMap.SimpleEntry<String, Integer> entry = new AbstractMap.SimpleEntry<String,Integer>(key, value);
+            long value = (long)in.readObject();
+            AbstractMap.SimpleEntry<String, Long> entry = new AbstractMap.SimpleEntry<String, Long>(key, value);
             this.data.add(entry);
         }
     }

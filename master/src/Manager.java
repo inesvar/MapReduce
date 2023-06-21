@@ -24,7 +24,7 @@ public class Manager extends Thread {
     private volatile static int readyForShuffle = 0;
     private volatile static int readyForReduce = 0;
     private volatile static int dataReceived = 0;
-    private volatile static HashMap<String, Integer> wordCount = new HashMap<String, Integer>();
+    private volatile static HashMap<String, Long> wordCount = new HashMap<String, Long>();
 
     // will be written by only one thread
     private static volatile boolean done = false;
@@ -71,7 +71,7 @@ public class Manager extends Thread {
         }
 
         ml.interrupt();
-        System.out.println("result " + wordCount.toString());
+        System.out.println("result");
         System.exit(0);
     }
 
@@ -82,12 +82,12 @@ public class Manager extends Thread {
     }
 
     public void startShuffle() {
-        System.out.println("master reached start shuffle");
+        System.out.println("master reached startShuffle");
         for (int slave : SLAVES) {
             Sender ms = new Sender(slave, new ShuffleReady(NB_SLAVES));
             ms.start();
         };
-        System.out.println("master started the shuffle");
+        System.out.println("master has started the shuffle");
     }
 
     public void startReduce() {
@@ -108,7 +108,7 @@ public class Manager extends Thread {
                     rs = ++readyForShuffle;
                     ready = readyForShuffle == NB_SLAVES;
                 }
-                System.out.println(rs.toString() + " slave(s) ready for shuffle" + ((ShuffleReady)obj).getId());
+                System.out.println(rs.toString() + " slave(s) ready for shuffle, last one is : " + ((ShuffleReady)obj).getId());
                 if (ready) {
                     startShuffle();
                 }

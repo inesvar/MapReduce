@@ -24,8 +24,8 @@ public class Manager extends Thread {
 
     // variables that will be accessed by multiple threads
     private volatile static int receivedData = 0;
-    private volatile static ArrayList<Map.Entry<String, Integer>> wordList = new ArrayList<>();
-
+    private volatile static ArrayList<Map.Entry<String, Long>> wordList = new ArrayList<>();
+    private static String fileInput;
     private static SlaveWorker worker;
 
     public static void main(String[] args) {
@@ -38,9 +38,13 @@ public class Manager extends Thread {
 
         // get the id of the slave
         ID = Integer.valueOf(args[1]);
+
+        // get the name of the file
+        fileInput = args[2];
+
         int PORT0;
-        if (args.length >= 3) {
-            PORT0 = Integer.valueOf(args[2]);
+        if (args.length >= 4) {
+            PORT0 = Integer.valueOf(args[3]);
         } else {
             PORT0 = 50000;
         }
@@ -64,7 +68,7 @@ public class Manager extends Thread {
             e.printStackTrace();
         }
         // Start the slaves
-        worker = new SlaveWorker(ID, IP);
+        worker = new SlaveWorker(ID, IP, fileInput);
         worker.start();
     }
 
