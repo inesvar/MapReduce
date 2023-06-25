@@ -3,8 +3,7 @@ import java.io.*;
 import java.util.*;
 
 public class WordCount {
-    private static ArrayList<Map.Entry<String, Long>> entries;
-
+    
     public static ArrayList<Map.Entry<String, Long>> countWords(String filename) throws IOException {
         long startTime = System.currentTimeMillis();
 
@@ -34,13 +33,7 @@ public class WordCount {
         long totalTime = endTime - startTime;
         System.out.println("Counting total time : " + totalTime + "ms");
 
-        startTime   = System.currentTimeMillis();
-
-        WordCount.entries = new ArrayList<>(wordCount.entrySet());
-
-        endTime   = System.currentTimeMillis();
-        totalTime = endTime - startTime;
-        System.out.println("Ordering total time : " + totalTime + "ms");
+        ArrayList<Map.Entry<String, Long>> entries = new ArrayList<>(wordCount.entrySet());
 
         return entries;
     }

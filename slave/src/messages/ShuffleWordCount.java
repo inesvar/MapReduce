@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
-import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class ShuffleData extends Message implements Serializable {
+public class ShuffleWordCount extends Message  {
     private ArrayList<Map.Entry<String, Long>> data = new ArrayList<>();
     private int id;
 
-    public ShuffleData(int id) {
+    public ShuffleWordCount(int id) {
         this.id = id;
     }
 

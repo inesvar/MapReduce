@@ -1,9 +1,9 @@
 package src.messages;
 
-public class ShuffleReady extends Message  {
+public class MapReady extends Message  {
     private int slaveId;
 
-    public ShuffleReady(int id) {
+    public MapReady(int id) {
         slaveId = id;
     }
 

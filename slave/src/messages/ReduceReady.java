@@ -1,8 +1,6 @@
 package src.messages;
 
-import java.io.Serializable;
-
-public class ReduceReady extends Message implements Serializable {
+public class ReduceReady extends Message  {
     private int slaveId;
 
     public ReduceReady(int id) {

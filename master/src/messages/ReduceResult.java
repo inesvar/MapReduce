@@ -1,18 +1,22 @@
 package src.messages;
 
-import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
-public class ReduceResult extends Message implements Serializable {
-    private HashMap<String, Long> wordCount;
+public class ReduceResult extends Message  {
+    private TreeMap<Long, ArrayList<String>> wordOccurences;
     private int id;
 
-    public ReduceResult(int id, HashMap<String, Long> wordCount) {
+    public ReduceResult(int id, TreeMap<Long, ArrayList<String>> wordOccurences) {
         this.id = id;
-        this.wordCount = wordCount;
+        this.wordOccurences = wordOccurences;
     }
 
-    public HashMap<String, Long> getWordCount() {
-        return wordCount;
+    public TreeMap<Long, ArrayList<String>> getWordOccurences() {
+        return wordOccurences;
+    }
+
+    public int getId() {
+        return id;
     }
 }

@@ -1,8 +1,6 @@
 package src.messages;
 
-import java.io.Serializable;
-
-public class ShuffleReady extends Message implements Serializable {
+public class ShuffleReady extends Message  {
     private int slaveId;
 
     public ShuffleReady(int id) {

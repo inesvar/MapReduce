@@ -7,11 +7,10 @@ IPFile="IPs.txt"
 
 
 # RUNNING THE MAPREDUCE LOCALLY
-numberOfSlaves=3
+numberOfSlaves=1
 echo "Running with $numberOfSlaves slaves"
 
 #CLEANING UP AFTER THE LAST EXECUTION
-pkill java
 rm -rf "$slaveFolder"?*
 
 #CREATING A FILE CONTAINING THE LOCAL IP
@@ -38,7 +37,7 @@ for i in $(seq 1 $((numberOfSlaves))); do
   if [ -n "$2" ]; then
     java -cp target "$slaveFile" "$numberOfSlaves" "$i" "$2" &
   else
-    java -cp target "$slaveFile" "$numberOfSlaves" "$i" &
+    java -cp target "$slaveFile" "$numberOfSlaves" "$i" "S0.txt" &
   fi
   cd ..
 done

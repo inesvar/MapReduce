@@ -19,8 +19,8 @@ public class Listener extends Thread {
             System.out.println("server " + ID.toString() + " listening on port " + PORT[ID].toString());
             while (true) {
                 Socket master = serverSocket.accept();
-                Manager manager = new Manager(master);
-                manager.start();
+                Manager Manager = new Manager(master);
+                Manager.start();
             }
         } catch (IOException e) {
             e.printStackTrace();

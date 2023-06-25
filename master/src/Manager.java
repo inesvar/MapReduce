@@ -3,13 +3,18 @@ package src;
 import src.messages.ShuffleReady;
 import src.messages.ReduceReady;
 import src.messages.ReduceResult;
+import src.messages.Kill;
+import src.messages.MapReady;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class Manager extends Thread {
 
@@ -21,15 +26,18 @@ public class Manager extends Thread {
     public static String[] IP;
 
     // variables that will be accessed by multiple threads
+    private volatile static int readyForMap = 0;
     private volatile static int readyForShuffle = 0;
     private volatile static int readyForReduce = 0;
     private volatile static int dataReceived = 0;
-    private volatile static HashMap<String, Long> wordCount = new HashMap<String, Long>();
+    private volatile static TreeMap<Long, ArrayList<String>> wordOccurences = new TreeMap<Long, ArrayList<String>>();
 
+    // variables that will be accessed by multiple threads but not at the same time
+    private volatile static long startTime, endTime, totalTime;
     // will be written by only one thread
     private static volatile boolean done = false;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // get the number of slaves
         NB_SLAVES = Integer.valueOf(args[0]);
         SLAVES = new Integer[NB_SLAVES];
@@ -71,7 +79,24 @@ public class Manager extends Thread {
         }
 
         ml.interrupt();
-        System.out.println("result");
+        // write the wordOccurences to a file
+        String fileOutput = "output.txt";
+            try {
+                PrintWriter writer = new PrintWriter(fileOutput, "UTF-8");
+                for (Map.Entry<Long, ArrayList<String>> entry : wordOccurences.entrySet()) {
+                    writer.println(entry.getKey() + " : " + entry.getValue().toString());
+                }
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        System.out.println("result written to file");
+        for (int slave : SLAVES) {
+            Sender ms = new Sender(slave, new Kill());
+            ms.start();
+        };
+        System.out.println("master has sent kill to all slaves");
+        Thread.sleep(1000);
         System.exit(0);
     }
 
@@ -79,6 +104,15 @@ public class Manager extends Thread {
     
     public Manager(Socket socket) {
         this.socket = socket;
+    }
+
+    public void startMap() {
+        System.out.println("master reached startMap");
+        for (int slave : SLAVES) {
+            Sender ms = new Sender(slave, new MapReady(NB_SLAVES));
+            ms.start();
+        };
+        System.out.println("master has started the map");
     }
 
     public void startShuffle() {
@@ -101,15 +135,36 @@ public class Manager extends Thread {
         try {
             ObjectInputStream oin = new ObjectInputStream(this.socket.getInputStream());
             Object obj = oin.readObject(); 
-            if (obj instanceof ShuffleReady) {
+            if (obj instanceof MapReady) {
+                boolean ready = false;
+                Integer rs;
+                synchronized(this) {
+                    rs = ++readyForMap;
+                    ready = readyForMap % NB_SLAVES == 0;
+                }
+                System.out.println(rs.toString() + " slave(s) ready for map, last one is : " + ((MapReady)obj).getId());
+                if (ready) {
+                    if (rs > NB_SLAVES) {
+                        endTime = System.currentTimeMillis();
+                        totalTime = endTime - startTime;
+                        System.out.println("\n\nTotal time for the reduce: " + totalTime + "\n\n");
+                    }
+                    startTime = System.currentTimeMillis();
+                    startMap();
+                }
+            } else if (obj instanceof ShuffleReady) {
                 boolean ready = false;
                 Integer rs;
                 synchronized(this) {
                     rs = ++readyForShuffle;
-                    ready = readyForShuffle == NB_SLAVES;
+                    ready = readyForShuffle % NB_SLAVES == 0;
                 }
                 System.out.println(rs.toString() + " slave(s) ready for shuffle, last one is : " + ((ShuffleReady)obj).getId());
                 if (ready) {
+                    endTime = System.currentTimeMillis();
+                    totalTime = endTime - startTime;
+                    System.out.println("\n\nTotal time for the map: " + totalTime + "\n\n");
+                    startTime = System.currentTimeMillis();
                     startShuffle();
                 }
             } else if (obj instanceof ReduceReady) {
@@ -117,10 +172,14 @@ public class Manager extends Thread {
                 Integer rr;
                 synchronized(this) {
                     rr = ++readyForReduce;
-                    ready = readyForReduce == NB_SLAVES;
+                    ready = readyForReduce % NB_SLAVES == 0;
                 }
                 System.out.println(rr.toString() + " slave(s) ready for reduce");
                 if (ready) {
+                    endTime = System.currentTimeMillis();
+                    totalTime = endTime - startTime;
+                    System.out.println("\n\nTotal time for the shuffle: " + totalTime + "\n\n");
+                    startTime = System.currentTimeMillis();
                     startReduce();
                 }
             } else if (obj instanceof ReduceResult) {
@@ -128,8 +187,12 @@ public class Manager extends Thread {
                 Integer dr;
                 synchronized(this) {
                     dr = ++dataReceived;
-                    wordCount.putAll(rr.getWordCount());
+                    wordOccurences.putAll(rr.getWordOccurences());
                     if (dataReceived == NB_SLAVES) {
+                        endTime = System.currentTimeMillis();
+                        totalTime = endTime - startTime;
+                        System.out.println("\n\nTotal time for the reduce: " + totalTime + "\n\n");
+                        startTime = System.currentTimeMillis();
                         done = true;
                     }
                 }

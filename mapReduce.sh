@@ -14,14 +14,10 @@ data=(""$commoncrawl"00000.warc.wet"
 
 
 # RUNNING THE MAP REDUCE REMOTELY
-slaves=("tp-3a107-14")
+slaves=("tp-1a252-04")
 numberOfSlaves=${#slaves[@]}
 echo "Running with $numberOfSlaves slaves"
-master="tp-3a107-15"
-
-#CLEANING UP AFTER THE LAST EXECUTION
-echo "pkill java"
-pkill java
+master="tp-1a252-02"
 
 #PRINTING THE MACHINES
 echo "Running with $numberOfSlaves slaves: ${slaves[@]}"
@@ -53,7 +49,7 @@ scp -r "$masterFolder" "$login@$master:$remoteFolder"
 echo "ssh $login@$master cd $remoteFolder$masterFolder; ant -S; java -cp target $execFile $numberOfSlaves $@"
 ssh "$login@$master" cd "$remoteFolder$masterFolder; ant -S; java -cp target $execFile $numberOfSlaves $@" &
 
-sleep 5
+sleep 10
 
 #SENDING THE PROGRAM AND DATA TO EACH COMPUTER AND COMPILING
 i=1
@@ -73,7 +69,7 @@ for c in ${slaves[@]}; do
   i=$((i+1))
 done
 
-sleep 5
+sleep 10
 
 #RUNNING THE CODE
 i=1

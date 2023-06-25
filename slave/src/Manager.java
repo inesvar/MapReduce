@@ -1,8 +1,11 @@
 package src;
 
+import src.messages.Kill;
+import src.messages.MapReady;
 import src.messages.ShuffleReady;
 import src.messages.ReduceReady;
-import src.messages.ShuffleData;
+import src.messages.ShuffleWordCount;
+import src.messages.ShuffleWordOccurences;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,8 +28,12 @@ public class Manager extends Thread {
     // variables that will be accessed by multiple threads
     private volatile static int receivedData = 0;
     private volatile static ArrayList<Map.Entry<String, Long>> wordList = new ArrayList<>();
+    private volatile static ArrayList<Map.Entry<Long, ArrayList<String>>> occurenceList = new ArrayList<>();
     private static String fileInput;
     private static SlaveWorker worker;
+    private volatile static boolean oneReduceDone = false;
+
+    private static Listener ml;
 
     public static void main(String[] args) {
         // get the number of slaves
@@ -53,7 +60,7 @@ public class Manager extends Thread {
             PORT[i] = PORT0 + i;
         }
         // Start the listener
-        Listener ml = new Listener();
+        ml = new Listener();
         ml.start();
 
         // read the IPs from the file IPfile.txt
@@ -67,7 +74,7 @@ public class Manager extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Start the slaves
+        // Start the slave
         worker = new SlaveWorker(ID, IP, fileInput);
         worker.start();
     }
@@ -82,12 +89,22 @@ public class Manager extends Thread {
         try {
             ObjectInputStream oin = new ObjectInputStream(this.socket.getInputStream());
             Object obj = oin.readObject(); 
-            if (obj instanceof ShuffleReady) {
+            if (obj instanceof MapReady) {
+                System.out.println("slave " + ID.toString() + " received map ready");
+                worker.startMap();
+            } else if (obj instanceof ShuffleReady) {
                 worker.startShuffle();
             } else if (obj instanceof ReduceReady) {
-                synchronized(this) { worker.startReduce(wordList); }
-            } else if (obj instanceof ShuffleData) {
-                ShuffleData sd = (ShuffleData) obj;
+                synchronized(this) { 
+                    if (!oneReduceDone) {
+                        worker.startReduceWordCount(wordList);
+                        oneReduceDone = true;
+                    } else {
+                        worker.startReduceWordOccurences(occurenceList);
+                    }
+                }
+            } else if (obj instanceof ShuffleWordCount) {
+                ShuffleWordCount sd = (ShuffleWordCount) obj;
                 int rr;
                 synchronized(this) {
                     wordList.addAll(sd.getEntries());
@@ -100,6 +117,25 @@ public class Manager extends Thread {
                     senderRR.start();
                 }
                 System.out.println("slave " + ID.toString() + " received entry");
+            } else if (obj instanceof ShuffleWordOccurences) {
+                ShuffleWordOccurences sd = (ShuffleWordOccurences) obj;
+                int rr;
+                synchronized(this) {
+                    occurenceList.addAll(sd.getEntries());
+                    rr = ++receivedData;
+                }
+                if (rr == 2 * NB_SLAVES) {
+                    // NOTIFY THE MASTER THAT ALL THE PACKETS HAVE BEEN RECEIVED
+                    System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
+                    Sender senderRR = new Sender(MASTER, new ReduceReady(ID));
+                    senderRR.start();
+                }
+                System.out.println("slave " + ID.toString() + " received occurence");
+            } else if (obj instanceof Kill) {
+                System.out.println("slave is shutting down ml");
+                // Kill the listener
+                ml.interrupt();
+                System.exit(0);
             } else {
                 System.out.println("the message was not recognized");
             }
