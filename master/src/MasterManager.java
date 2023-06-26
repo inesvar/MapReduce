@@ -16,7 +16,7 @@ import java.util.TreeMap;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class Manager extends Thread {
+public class MasterManager extends Thread {
 
     public static final Integer ID = 0;
     // almost final variables
@@ -45,12 +45,7 @@ public class Manager extends Thread {
             SLAVES[i] = i+1;
         }
 
-        int PORT0;
-        if (args.length >= 2) {
-            PORT0 = Integer.valueOf(args[1]);
-        } else {
-            PORT0 = 50000;
-        }
+        int PORT0 = 50000;
         PORT = new Integer[NB_SLAVES + 1];
         for (int i = 0; i < NB_SLAVES + 1; i++) {
             PORT[i] = PORT0 + i;
@@ -102,7 +97,7 @@ public class Manager extends Thread {
 
     private Socket socket;
     
-    public Manager(Socket socket) {
+    public MasterManager(Socket socket) {
         this.socket = socket;
     }
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 slaveFolder="slave"
 masterFolder="master"
-slaveFile="src.Manager"
-masterFile="src.Manager"
+slaveFile="src.SlaveManager"
+masterFile="src.MasterManager"
 IPFile="IPs.txt"
 
 
@@ -11,6 +11,7 @@ numberOfSlaves=1
 echo "Running with $numberOfSlaves slaves"
 
 #CLEANING UP AFTER THE LAST EXECUTION
+pkill java
 rm -rf "$slaveFolder"?*
 
 #CREATING A FILE CONTAINING THE LOCAL IP
@@ -33,11 +34,7 @@ for i in $(seq 1 $((numberOfSlaves))); do
   cp -r "$slaveFolder" "$slaveFolder$i"
   cd "$slaveFolder$i"
   ant -S
-  echo "java -cp target $slaveFile $numberOfSlaves $i $2"
-  if [ -n "$2" ]; then
-    java -cp target "$slaveFile" "$numberOfSlaves" "$i" "$2" &
-  else
-    java -cp target "$slaveFile" "$numberOfSlaves" "$i" "S0.txt" &
-  fi
+  echo "java -cp target $slaveFile $numberOfSlaves $i "S0.txt" "S1.txt""
+  java -cp target "$slaveFile" "$numberOfSlaves" "$i" "S0.txt" "S1.txt" &
   cd ..
 done

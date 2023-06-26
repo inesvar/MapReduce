@@ -1,7 +1,7 @@
 package src;
 
-import static src.Manager.PORT;
-import static src.Manager.IP;
+import static src.SlaveManager.PORT;
+import static src.SlaveManager.IP;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;

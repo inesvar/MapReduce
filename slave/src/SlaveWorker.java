@@ -1,5 +1,5 @@
 package src;
-import static src.Manager.*;
+import static src.SlaveManager.*;
 
 import src.messages.ShuffleWordCount;
 import src.messages.ShuffleWordOccurences;
@@ -10,20 +10,20 @@ import src.messages.ReduceResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.ArrayList;
+// import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
 // This class does the MAP, the SHUFFLE, notifies the Master
 public class SlaveWorker extends Thread {
     private Integer id;
-    private String fileInput;
+    private ArrayList<String> fileInput = new ArrayList<>();
     private HashMap<String, Long> wordCountHashmap = new HashMap<>();
     private TreeMap<Long, ArrayList<String>> wordOccurencesHashmap = new TreeMap<>();
     private ArrayList<Map.Entry<String, Long>> entryList;
     private ArrayList<Map.Entry<Long, ArrayList<String>>> occurencesList;
 
-    public SlaveWorker(Integer id, String[] IPs, String fileInput) {
+    public SlaveWorker(Integer id, String[] IPs, ArrayList<String> fileInput) {
         this.id = id;
         // construct the file name of the text that is going to be mapped
         this.fileInput = fileInput;

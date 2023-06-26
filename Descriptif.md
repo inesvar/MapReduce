@@ -38,10 +38,15 @@ Tri temps total (sur mon ordi): 107ms
 
 ### fichier du commoncrawl
 
-Les mots les plus fréquents dans le fichier commun récupéré sur commoncrawl : 
+Les mots les plus fréquents dans le fichier commun récupéré sur le premier fichier du commoncrawl : 
 
 the=448016, to=304221, and=291146, a=280111, de=265616
 
 Comptage des mots temps total (sur ordi de l'école): 10328ms
 
 Tri temps total (sur ordi de l'école): 3007ms
+
+
+## Etape Suivantes
+
+J'ai implementé le double map reduce et le master 

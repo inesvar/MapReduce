@@ -4,13 +4,19 @@ login="ivarhol-21"
 remoteFolder="/tmp/$login/"
 slaveFolder="slave"
 masterFolder="master"
-execFile="src.Manager"
+slaveFile="src.SlaveManager"
+masterFile="src.MasterManager"
 IPFile="IPs.txt"
 localIP=$(hostname -I  | awk '{print $1}')
 commoncrawl="/cal/commoncrawl/CC-MAIN-20230320083513-20230320113513-"
 data=(""$commoncrawl"00000.warc.wet"
 ""$commoncrawl"00001.warc.wet"
-""$commoncrawl"00002.warc.wet")
+""$commoncrawl"00002.warc.wet"
+""$commoncrawl"00003.warc.wet"
+""$commoncrawl"00004.warc.wet"
+""$commoncrawl"00005.warc.wet"
+""$commoncrawl"00006.warc.wet"
+""$commoncrawl"00007.warc.wet")
 
 
 # RUNNING THE MAP REDUCE REMOTELY
@@ -46,8 +52,8 @@ ssh "$login@$master" rm -rf "$remoteFolder; mkdir $remoteFolder"
 echo "scp -r $masterFolder $login@$master:$remoteFolder"
 scp -r "$masterFolder" "$login@$master:$remoteFolder"
 
-echo "ssh $login@$master cd $remoteFolder$masterFolder; ant -S; java -cp target $execFile $numberOfSlaves $@"
-ssh "$login@$master" cd "$remoteFolder$masterFolder; ant -S; java -cp target $execFile $numberOfSlaves $@" &
+echo "ssh $login@$master cd $remoteFolder$masterFolder; ant -S; java -cp target $masterFile $numberOfSlaves $@"
+ssh "$login@$master" cd "$remoteFolder$masterFolder; ant -S; java -cp target $masterFile $numberOfSlaves" &
 
 sleep 10
 
@@ -74,8 +80,8 @@ sleep 10
 #RUNNING THE CODE
 i=1
 for c in ${slaves[@]}; do
-  command4=("ssh" "$login@$c" "cd $remoteFolder$slaveFolder$i;java -cp target $execFile $numberOfSlaves $i ${data[$((i-1))]} $@")
+  command4=("ssh" "$login@$c" "cd $remoteFolder$slaveFolder$i;java -Xmx6g -cp target $slaveFile $numberOfSlaves $i ${data[$((i-1))]}")
   echo ${command4[*]}
   "${command4[@]}" &
-  i=$((i+1))
+  i=$((i+8))
 done

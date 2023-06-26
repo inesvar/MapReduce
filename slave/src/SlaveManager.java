@@ -15,7 +15,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class Manager extends Thread {
+public class SlaveManager extends Thread {
 
     // almost final variables
     public static int NB_SLAVES;
@@ -29,7 +29,7 @@ public class Manager extends Thread {
     private volatile static int receivedData = 0;
     private volatile static ArrayList<Map.Entry<String, Long>> wordList = new ArrayList<>();
     private volatile static ArrayList<Map.Entry<Long, ArrayList<String>>> occurenceList = new ArrayList<>();
-    private static String fileInput;
+    private static ArrayList<String> fileInput = new ArrayList<>();
     private static SlaveWorker worker;
     private volatile static boolean oneReduceDone = false;
 
@@ -42,19 +42,16 @@ public class Manager extends Thread {
         for (int i = 0; i < NB_SLAVES; i++) {
             SLAVES[i] = i+1;
         }
-
         // get the id of the slave
         ID = Integer.valueOf(args[1]);
 
-        // get the name of the file
-        fileInput = args[2];
-
-        int PORT0;
-        if (args.length >= 4) {
-            PORT0 = Integer.valueOf(args[3]);
-        } else {
-            PORT0 = 50000;
+        // get the name of the files
+        for (int i = 2; i < args.length; i++) {
+            fileInput.add(args[i]);
+            System.out.println("slave " + ID.toString() + " received file " + args[i]);
         }
+
+        int PORT0 = 50000;
         PORT = new Integer[NB_SLAVES + 1];
         for (int i = 0; i < NB_SLAVES + 1; i++) {
             PORT[i] = PORT0 + i;
@@ -81,7 +78,7 @@ public class Manager extends Thread {
 
     private Socket socket;
     
-    public Manager(Socket socket) {
+    public SlaveManager(Socket socket) {
         this.socket = socket;
     }
 

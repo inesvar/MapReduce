@@ -1,7 +1,7 @@
 package src;
 
-import static src.Manager.PORT;
-import static src.Manager.ID;
+import static src.MasterManager.PORT;
+import static src.MasterManager.ID;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,7 +15,7 @@ public class Listener extends Thread {
             System.out.println("master server listening on port " + PORT[ID].toString());
             while (true) {
                 Socket socket = serverSocket.accept();
-                Manager process = new Manager(socket);
+                MasterManager process = new MasterManager(socket);
                 process.start();
             }
         } catch (IOException e) {
