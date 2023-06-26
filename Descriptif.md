@@ -49,4 +49,28 @@ Tri temps total (sur ordi de l'école): 3007ms
 
 ## Etape Suivantes
 
-J'ai implementé le double map reduce et le master 
+
+J'ai implementé le double map reduce en utilisant une TreeMap pour le sort du dernier reduce.
+Pour équilibrer la quantité de données envoyée aux slaves, j'ai utilisé un hash pour le 2ème reduce, même si ça donne plus de travail au master quand il trie.
+
+J'ai testé mon programme sur un corpus de 6 fichiers (les fichiers CC 00006 à 00011). J'ai executé le map reduce avec 1, 2, 3 et 6 slaves.
+
+Lest résultats détaillés sont dans le tableau suivant.
+
+
+           | 1 slave | 2 slaves | 3 slaves | 6 slaves |
+|----------|---------|----------|----------|----------|
+|   TOTAL  |         |          |          |          |
+|----------|---------|----------|----------|----------|
+|    Map   |         |          |          |          |
+|----------|---------|----------|----------|----------|
+| Shuffle  |         |          |          |          |
+|----------|---------|----------|----------|----------|
+|  Reduce  |         |          |          |          |
+|----------|---------|----------|----------|----------|
+|   Map2   |         |          |          |          |
+|----------|---------|----------|----------|----------|
+| Shuffle2 |         |          |          |          |
+|----------|---------|----------|----------|----------|
+| Reduce2  |         |          |          |          |
+|----------|---------|----------|----------|----------|       
