@@ -1,16 +1,11 @@
 package src;
 import static src.SlaveManager.*;
 
-import src.messages.ShuffleWordCount;
-import src.messages.ShuffleWordOccurences;
-import src.messages.ShuffleReady;
-import src.messages.MapReady;
-import src.messages.ReduceResult;
+import src.messages.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-// import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -45,39 +40,29 @@ public class SlaveWorker extends Thread {
 
     public synchronized void startMap() {
         this.notify();
-        System.out.println("worker "+id.toString()+" is notified to start map");
     }
 
     public synchronized void run() {
         try {
             // NOTIFY THE MASTER
-            System.out.println(id.toString()+" trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-            Sender senderSM = new Sender(MASTER, new MapReady(id));
+            Sender senderSM = new Sender(MASTER, new MapReady());
             senderSM.start();
 
-            System.out.println("worker "+id.toString()+" waiting for map");
             this.wait();
-            System.out.println("worker "+id.toString()+" starting map");
 
             // MAPPING
             ArrayList<Map.Entry<String, Long>> entries = WordCount.countWords(fileInput);
-            System.out.println();
-            for (int i = 0; i < 2; i++) {
-                System.out.println(entries.get(i).toString());
-            }
 
             // NOTIFY THE MASTER
-            System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-            Sender senderSR = new Sender(MASTER, new ShuffleReady(id));
+            Sender senderSR = new Sender(MASTER, new ShuffleReady());
             senderSR.start();
 
             wait();
-            System.out.println("worker "+id.toString()+" starting shuffle");
 
             // SHUFFLE
             ShuffleWordCount[] data = new ShuffleWordCount[NB_SLAVES];
             for (int i = 0; i < NB_SLAVES; i++) {
-                data[i] = new ShuffleWordCount(id);
+                data[i] = new ShuffleWordCount();
             }
             for (Map.Entry<String, Long> entry: entries) {
                 int slave = entry.getKey().hashCode()%NB_SLAVES + NB_SLAVES;
@@ -89,7 +74,6 @@ public class SlaveWorker extends Thread {
             }
 
             wait();
-            System.out.println("worker "+id.toString()+" starting reduce");
 
             //REDUCE
             for (Map.Entry<String, Long> word : entryList) {
@@ -99,32 +83,24 @@ public class SlaveWorker extends Thread {
             }
 
             // NOTIFY THE MASTER
-            System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-            senderSM = new Sender(MASTER, new MapReady(id));
+            senderSM = new Sender(MASTER, new MapReady());
             senderSM.start();
 
             wait();
-            System.out.println("worker "+id.toString()+" starting second map");
 
             // 2ND MAPPING
             ArrayList<Map.Entry<Long, ArrayList<String>>> entries2 = WordOccurence.groupOccurences(wordCountHashmap);
-            System.out.println();
-            for (int i = 0; i < 2; i++) {
-                System.out.println(entries.get(i).toString());
-            }
 
             // NOTIFY THE MASTER
-            System.out.println(id.toString()+"trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-            senderSR = new Sender(MASTER, new ShuffleReady(id));
+            senderSR = new Sender(MASTER, new ShuffleReady());
             senderSR.start();
 
             wait();
-            System.out.println("worker "+id.toString()+" starting shuffle");
-
+            
             // 2ND SHUFFLE
             ShuffleWordOccurences[] data2 = new ShuffleWordOccurences[NB_SLAVES];
             for (int i = 0; i < NB_SLAVES; i++) {
-                data2[i] = new ShuffleWordOccurences(id);
+                data2[i] = new ShuffleWordOccurences();
             }
             for (Map.Entry<Long, ArrayList<String>> entry: entries2) {
                 int slave = entry.getKey().hashCode()%NB_SLAVES + NB_SLAVES;
@@ -136,7 +112,6 @@ public class SlaveWorker extends Thread {
             }
 
             wait();
-            System.out.println("worker "+id.toString()+" starting reduce");
             
             // 2ND REDUCE
             ArrayList<String> emptyList = new ArrayList<>();
@@ -148,8 +123,7 @@ public class SlaveWorker extends Thread {
             }
 
             // NOTIFY THE MASTER
-            System.out.println("trying to send results to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-            Sender senderRR = new Sender(MASTER, new ReduceResult(id, wordOccurencesHashmap));
+            Sender senderRR = new Sender(MASTER, new ReduceResult(wordOccurencesHashmap));
             senderRR.start();
 
             System.out.println("worker "+id.toString()+" finished");

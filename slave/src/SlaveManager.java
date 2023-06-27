@@ -1,11 +1,6 @@
 package src;
 
-import src.messages.Kill;
-import src.messages.MapReady;
-import src.messages.ShuffleReady;
-import src.messages.ReduceReady;
-import src.messages.ShuffleWordCount;
-import src.messages.ShuffleWordOccurences;
+import src.messages.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,7 +12,7 @@ import java.util.Map;
 
 public class SlaveManager extends Thread {
 
-    // almost final variables
+    // almost final variables (written only once before the Worker starts)
     public static int NB_SLAVES;
     public static Integer[] SLAVES;
     public static Integer[] PORT;
@@ -48,7 +43,6 @@ public class SlaveManager extends Thread {
         // get the name of the files
         for (int i = 2; i < args.length; i++) {
             fileInput.add(args[i]);
-            System.out.println("slave " + ID.toString() + " received file " + args[i]);
         }
 
         int PORT0 = 50000;
@@ -87,7 +81,6 @@ public class SlaveManager extends Thread {
             ObjectInputStream oin = new ObjectInputStream(this.socket.getInputStream());
             Object obj = oin.readObject(); 
             if (obj instanceof MapReady) {
-                System.out.println("slave " + ID.toString() + " received map ready");
                 worker.startMap();
             } else if (obj instanceof ShuffleReady) {
                 worker.startShuffle();
@@ -109,11 +102,9 @@ public class SlaveManager extends Thread {
                 }
                 if (rr == NB_SLAVES) {
                     // NOTIFY THE MASTER THAT ALL THE PACKETS HAVE BEEN RECEIVED
-                    System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-                    Sender senderRR = new Sender(MASTER, new ReduceReady(ID));
+                    Sender senderRR = new Sender(MASTER, new ReduceReady());
                     senderRR.start();
                 }
-                System.out.println("slave " + ID.toString() + " received entry");
             } else if (obj instanceof ShuffleWordOccurences) {
                 ShuffleWordOccurences sd = (ShuffleWordOccurences) obj;
                 int rr;
@@ -123,18 +114,14 @@ public class SlaveManager extends Thread {
                 }
                 if (rr == 2 * NB_SLAVES) {
                     // NOTIFY THE MASTER THAT ALL THE PACKETS HAVE BEEN RECEIVED
-                    System.out.println("trying to connect to " + IP[MASTER] + " port " + PORT[MASTER].toString());
-                    Sender senderRR = new Sender(MASTER, new ReduceReady(ID));
+                    Sender senderRR = new Sender(MASTER, new ReduceReady());
                     senderRR.start();
                 }
-                System.out.println("slave " + ID.toString() + " received occurence");
             } else if (obj instanceof Kill) {
                 System.out.println("slave is shutting down ml");
                 // Kill the listener
                 ml.interrupt();
                 System.exit(0);
-            } else {
-                System.out.println("the message was not recognized");
             }
         } catch (IOException e) {
             e.printStackTrace();

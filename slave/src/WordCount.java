@@ -32,10 +32,6 @@ public class WordCount {
             reader.close();
         }
 
-        long endTime   = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
-        System.out.println("Counting total time : " + totalTime + "ms");
-
         ArrayList<Map.Entry<String, Long>> entries = new ArrayList<>(wordCount.entrySet());
 
         return entries;

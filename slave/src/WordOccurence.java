@@ -14,11 +14,7 @@ public class WordOccurence {
             words.add(entry.getKey());
             wordOccurence.put(entry.getValue(), words);
         }
-
-        long endTime   = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
-        System.out.println("Grouping occurences total time : " + totalTime + "ms");
-        
+ 
         ArrayList<Map.Entry<Long, ArrayList<String>>> entries = new ArrayList<>(wordOccurence.entrySet());
 
         return entries;

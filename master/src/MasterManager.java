@@ -1,10 +1,6 @@
 package src;
 
-import src.messages.ShuffleReady;
-import src.messages.ReduceReady;
-import src.messages.ReduceResult;
-import src.messages.Kill;
-import src.messages.MapReady;
+import src.messages.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -102,26 +98,22 @@ public class MasterManager extends Thread {
     }
 
     public void startMap() {
-        System.out.println("master reached startMap");
         for (int slave : SLAVES) {
-            Sender ms = new Sender(slave, new MapReady(NB_SLAVES));
+            Sender ms = new Sender(slave, new MapReady());
             ms.start();
         };
-        System.out.println("master has started the map");
     }
 
     public void startShuffle() {
-        System.out.println("master reached startShuffle");
         for (int slave : SLAVES) {
-            Sender ms = new Sender(slave, new ShuffleReady(NB_SLAVES));
+            Sender ms = new Sender(slave, new ShuffleReady());
             ms.start();
         };
-        System.out.println("master has started the shuffle");
     }
 
     public void startReduce() {
         for (int slave : SLAVES) {
-            Sender ms = new Sender(slave, new ReduceReady(NB_SLAVES));
+            Sender ms = new Sender(slave, new ReduceReady());
             ms.start();
         };
     }
@@ -137,7 +129,6 @@ public class MasterManager extends Thread {
                     rs = ++readyForMap;
                     ready = readyForMap % NB_SLAVES == 0;
                 }
-                System.out.println(rs.toString() + " slave(s) ready for map, last one is : " + ((MapReady)obj).getId());
                 if (ready) {
                     if (rs > NB_SLAVES) {
                         endTime = System.currentTimeMillis();
@@ -149,12 +140,10 @@ public class MasterManager extends Thread {
                 }
             } else if (obj instanceof ShuffleReady) {
                 boolean ready = false;
-                Integer rs;
                 synchronized(this) {
-                    rs = ++readyForShuffle;
+                    readyForShuffle++;
                     ready = readyForShuffle % NB_SLAVES == 0;
                 }
-                System.out.println(rs.toString() + " slave(s) ready for shuffle, last one is : " + ((ShuffleReady)obj).getId());
                 if (ready) {
                     endTime = System.currentTimeMillis();
                     totalTime = endTime - startTime;
@@ -164,12 +153,10 @@ public class MasterManager extends Thread {
                 }
             } else if (obj instanceof ReduceReady) {
                 boolean ready = false;
-                Integer rr;
                 synchronized(this) {
-                    rr = ++readyForReduce;
+                    readyForReduce++;
                     ready = readyForReduce % NB_SLAVES == 0;
                 }
-                System.out.println(rr.toString() + " slave(s) ready for reduce");
                 if (ready) {
                     endTime = System.currentTimeMillis();
                     totalTime = endTime - startTime;
@@ -179,9 +166,8 @@ public class MasterManager extends Thread {
                 }
             } else if (obj instanceof ReduceResult) {
                 ReduceResult rr = (ReduceResult) obj;
-                Integer dr;
                 synchronized(this) {
-                    dr = ++dataReceived;
+                    dataReceived++;
                     wordOccurences.putAll(rr.getWordOccurences());
                     if (dataReceived == NB_SLAVES) {
                         endTime = System.currentTimeMillis();
@@ -191,9 +177,6 @@ public class MasterManager extends Thread {
                         done = true;
                     }
                 }
-                System.out.println(dr.toString() + " slave(s) done");
-            } else {
-                System.out.println("the message was not recognized");
             }
         } catch (IOException e) {
             e.printStackTrace();
