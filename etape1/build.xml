@@ -1,0 +1,9 @@
+<project name="Etape1" basedir="." default="compile">
+    <target name="compile" depends="clean">
+        <mkdir dir="target"/>
+        <javac srcdir="src" destdir="target" includeantruntime="false"/>
+    </target>
+    <target name="clean">
+        <delete dir="target"/>
+    </target>
+</project>
