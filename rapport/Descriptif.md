@@ -212,3 +212,5 @@ Sur le graphique suivant, on peut constater premièrement que les temps d'exécu
 On peut aussi constater que comme on l'avait remarqué dans la partie précédente, le **Reduce2** n'est pas bien parallélisé puisque les courbes rouge (total sans tenir compte de Reduce2) et bleue sont quasiment parallèles.
 
 ![](loi_amdahl.png)
+
+Pour améliorer le script, on pourrait faire pour chaque groupe de slaves deux map reduce sur des fichiers différents au lieu d'un. Cela permettrait de remplacer une partie du cache pour ne pas avoir un ralentissement supplémentaire lors de la première lecture du fichier tout en gardant les mêmes machines tout au long de l'expérience.
