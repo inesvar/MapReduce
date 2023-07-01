@@ -1,3 +1,12 @@
+# TP MapReduce
+
+Plan :
+- **Etape 1** : le tri, l'initialisation de la hashmap, les résultats
+- **Etape 10-11-12-13** : les choix d'implementation, le temps d'exécution en fonction du nombre de fichiers, les mesures
+- **Preuve de la loi d'Amdahl**
+
+
+
 ## Etape 1
 
 ### Le tri
@@ -22,6 +31,13 @@ Comme ce calcul a été réalisé pour des fichiers avec plusieurs langues, ce n
 
 ### Résultats
 
+Pour exécuter le code :
+```bash
+cd etape1
+ant
+java -cp target src.Main ../textes/forestier_mayotte.txt
+```
+
 Voici les mots les plus fréquentes dans les différents fichiers :
 
                                       |---------------|---------------|---------------|---------------|
@@ -38,13 +54,6 @@ Voici les mots les plus fréquentes dans les différents fichiers :
     |   premier fichier commoncrawl   |  the | 368564 |  to  | 287915 |  and | 280938 |  of  | 250764 |
     |---------------------------------|---------------|---------------|---------------|---------------|
 
-Pour exécuter le code :
-```bash
-cd etape1
-ant
-java -cp target src.Main ../textes/forestier_mayotte.txt
-```
-
 Et voici les temps d'exécution sur l'ordinateur tp-3a107-03, il s'agit de la première exécution sur cette machine (pas de cache pour la lecture) :
 
                                       |-------------|-----------|-------------------------|
@@ -58,7 +67,7 @@ Et voici les temps d'exécution sur l'ordinateur tp-3a107-03, il s'agit de la pr
     |---------------------------------|-------------|-----------|-------------------------|
     |   sante_publique                |  836ms      |  57ms     |  18111630               |
     |---------------------------------|-------------|-----------|-------------------------|
-    |   CC-00000warc.wet              |  13904ms    |  4323ms   |  344847006              |
+    |   premier fichier commoncrawl   |  13904ms    |  4323ms   |  344847006              |
     |---------------------------------|-------------|-----------|-------------------------|
 
 Les fichiers sont par ordre de taille croissant. On peut voir que le temps de calcul ne dépend pas seulement de la taille du fichier mais aussi probablement de la qualité de l'estimation de la taille de la hashmap.
@@ -66,8 +75,15 @@ Les fichiers sont par ordre de taille croissant. On peut voir que le temps de ca
 
 ## Etape 10-11-12-13
 
-J'ai implementé le double map reduce en utilisant une TreeMap pour le sort du dernier reduce.
-Pour équilibrer la quantité de données envoyée aux slaves, j'ai utilisé un hash pour le 2ème reduce, même si ça donne plus de travail au master quand il trie.
+### Choix d'implémentation
+
+Chaque slave ouvre un seul port pour recevoir les messages : j'aurais pu paralléliser la réception en ouvrant plusieurs ports.
+
+Pour éviter qu'il y ait des problèmes de réception, le listener fait spawn des threads pour gérer les messages.
+
+Pour le tri final lors du 2ème MapReduce, j'ai choisi de ne pas séparer les données en tranches triées, mais de hasher lors du shuffle pour équilibrer la quantitée de données envoyée à chaque slave. En conséquence, le master passe plus de temps à trier les données qu'il reçoit tout à la fin.
+
+### Temps d'exécution en fonction du nombre de fichiers
 
 J'ai mesuré le temps que met **un seul slave** à réaliser le traitement de 1, 2, 3 et 5 fichiers :
 
@@ -143,7 +159,7 @@ on peut en déduire :
 
 $$p = \frac{\frac{t_2}{t_1} - 1}{\frac{1}{n_2} - 1 - \frac{t_2}{t_1}*\left(\frac{1}{n_1} - 1 \right)}$$
 
-J'ai donc pu calculer p en faisant la moyenne des trois valeurs obtenues en comparant les 3 exécutions et j'obtiens :
+J'ai donc pu calculer p en faisant la moyenne des trois valeurs obtenues en comparant les 3 exécutions (voici les calculs détaillés : https://docs.google.com/spreadsheets/d/1xtcNH8XVfMqlRcaSybBeIaSp4cphzzLlFbPPctTCzdo/edit?usp=sharing) et j'obtiens :
 
 
                |----------|
@@ -169,3 +185,7 @@ C'est probablement dû au fait que la première exécution s'est fait plus lente
 
 De plus on remarque que les étapes de Reduce sont **les plus lentes**. Pour Reduce2, c'est parce que Master doit retrier les clés lui-même dans mon implémentation.
 Pour Reduce, c'est plus difficile à expliquer.
+
+## Preuve de la loi d'Amdahl
+
+Pour prouver la loi d'Amdahl, j'ai écrit un script spécial pour pouvoir tracer le temps d'exécution en fonction du nombre de slave avec beaucoup de données en abscisse.
