@@ -1,8 +1,8 @@
 # TP MapReduce
 
 Plan :
-- **Etape 1** : le tri, l'initialisation de la hashmap, les résultats
-- **Etape 10-11-12-13** : les choix d'implementation, le temps d'exécution en fonction du nombre de fichiers, les mesures
+- **Etape 1** : le tri, l'initialisation de la hashmap, exécuter le programme, les résultats
+- **Etape 10-11-12-13** : les choix d'implementation, exécuter le programme, le temps d'exécution en fonction du nombre de fichiers, les mesures
 - **Preuve de la loi d'Amdahl**
 
 
@@ -28,8 +28,7 @@ En utilisant le permier fichier CC et des splits du même fichier, je fais des c
 
 Comme ce calcul a été réalisé pour des fichiers avec plusieurs langues, ce n'est pas la régression la plus efficace pour les textes en français.
 
-
-### Résultats
+### Exécuter le programme
 
 Pour exécuter le code :
 ```bash
@@ -37,6 +36,8 @@ cd etape1
 ant
 java -cp target src.Main ../textes/forestier_mayotte.txt
 ```
+
+### Résultats 
 
 Voici les mots les plus fréquentes dans les différents fichiers :
 
@@ -82,6 +83,19 @@ Chaque slave ouvre un seul port pour recevoir les messages : j'aurais pu parall�
 Pour éviter qu'il y ait des problèmes de réception, le listener fait spawn des threads pour gérer les messages.
 
 Pour le tri final lors du 2ème MapReduce, j'ai choisi de ne pas séparer les données en tranches triées, mais de hasher lors du shuffle pour équilibrer la quantitée de données envoyée à chaque slave. En conséquence, le master passe plus de temps à trier les données qu'il reçoit tout à la fin.
+
+### Exécuter le programme
+
+
+Il faut modifier dans *mapReduce.sh* le **login**, l'array **slaves**  en fonction du besoin.
+```bash
+./mapReduce.sh # utilise toutes les machines de l'array slaves, elles traitent chacune un fichier CC
+```
+
+On peut aussi préciser le nombre de slaves voulus, le nombre de fichiers à traiter par slave
+```bash
+./mapReduce.sh 4 2 # utilise les 4 premières machines de l'array slaves, elles traitent deux fichiers CC chacune
+```
 
 ### Temps d'exécution en fonction du nombre de fichiers
 
@@ -188,4 +202,13 @@ Pour Reduce, c'est plus difficile à expliquer.
 
 ## Preuve de la loi d'Amdahl
 
-Pour prouver la loi d'Amdahl, j'ai écrit un script spécial pour pouvoir tracer le temps d'exécution en fonction du nombre de slave avec beaucoup de données en abscisse.
+Pour prouver la loi d'Amdahl, j'ai utilisé mon script *amdahl.sh* (il ne prend aucun paramètre) qui créée des splits du premier fichier CC et fait un map reduce pour un nombre de slaves allant de 1 à 6. J'ai utilisé les machines de la salle 3a107.
+
+
+Le détail des résultats que j'ai obtenu est trouvable ici ; https://docs.google.com/spreadsheets/d/1PuLsU4V_jdZMBGmNHDg66S5krdEhIwvpHVr55vpFg5s/edit?usp=sharing.
+
+Sur le graphique suivant, on peut constater premièrement que les temps d'exécution du programme sont très proches de ceux **prévus par la loi d'amdahl** pour une part de code parallélisable $p = 0.9$.
+
+On peut aussi constater que comme on l'avait remarqué dans la partie précédente, le **Reduce2** n'est pas bien parallélisé puisque les courbes rouge (total sans tenir compte de Reduce2) et bleue sont quasiment parallèles.
+
+![](loi_amdahl.png)
