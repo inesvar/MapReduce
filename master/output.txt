@@ -1,0 +1,3 @@
+2 : [sea, river]
+4 : [bear]
+6 : [aha]

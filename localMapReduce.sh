@@ -7,7 +7,7 @@ IPFile="IPs.txt"
 
 
 # RUNNING THE MAPREDUCE LOCALLY
-numberOfSlaves=1
+numberOfSlaves=2
 echo "Running with $numberOfSlaves slaves"
 
 #CLEANING UP AFTER THE LAST EXECUTION
@@ -30,11 +30,18 @@ java -cp target "$masterFile" "$numberOfSlaves" "$@" &
 cd ..
 
 #LAUCHING THE SLAVES
-for i in $(seq 1 $((numberOfSlaves))); do
+for i in $(seq 1 $((numberOfSlaves - 1))); do
   cp -r "$slaveFolder" "$slaveFolder$i"
   cd "$slaveFolder$i"
   ant -S
-  echo "java -cp target $slaveFile $numberOfSlaves $i "S0.txt" "S1.txt""
-  java -cp target "$slaveFile" "$numberOfSlaves" "$i" "S0.txt" "S1.txt" &
+  echo "java -cp target $slaveFile $numberOfSlaves $i "example.txt""
+  java -cp target "$slaveFile" "$numberOfSlaves" "$i" "example.txt" &
   cd ..
 done
+
+cp -r "$slaveFolder" "$slaveFolder$numberOfSlaves"
+cd "$slaveFolder$numberOfSlaves"
+ant -S
+echo "java -cp target $slaveFile $numberOfSlaves $numberOfSlaves "example.txt""
+java -cp target "$slaveFile" "$numberOfSlaves" "$numberOfSlaves" "example.txt"
+cd ..
